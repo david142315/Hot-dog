@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111111">
+<title>Cantinho do Hot Dog • Gestão</title>
+<style>
+:root{--bg:#101010;--panel:#191919;--panel2:#222;--line:#343434;--orange:#ff7900;--text:#f7f7f7;--muted:#aaa;--green:#159447;--red:#d82028;--yellow:#d88900;--blue:#1769d2}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,select{font:inherit}button{border:0;border-radius:10px;padding:11px 14px;background:var(--orange);color:white;font-weight:700;cursor:pointer}button.secondary{background:#343434}button.danger{background:#a91e25}button.good{background:#167d3d}button:disabled{opacity:.45;cursor:not-allowed}
+.app{display:none;grid-template-columns:230px 1fr;min-height:100vh}.app.authenticated{display:grid}.sidebar{background:#090909;border-right:1px solid #633000;padding:18px 12px;display:flex;flex-direction:column;gap:8px}.brand{padding:8px 8px 22px;text-align:center}.brand img{display:block;width:min(100%,190px);height:auto;margin:0 auto;object-fit:contain}.brand span{display:block;font-size:12px;font-weight:800;letter-spacing:1px;color:var(--orange);margin-top:5px}.nav{background:transparent;text-align:left;color:#ddd}.nav.active,.nav:hover{background:var(--orange);color:white}.main{min-width:0}.top{height:72px;border-bottom:1px solid #663300;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:#0b0b0b;position:sticky;top:0;z-index:5}.top strong{font-size:22px}.content{padding:22px;max-width:1500px;margin:auto}.view{display:none}.view.active{display:block}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}.muted{color:var(--muted)}.grid{display:grid;gap:14px}.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}.stat b{display:block;font-size:25px;margin-top:5px}.section-title{font-size:20px;margin:0 0 14px}.tables{grid-template-columns:repeat(auto-fill,minmax(125px,1fr))}.table-tile{min-height:112px;border:2px solid #287b43;background:#10552c;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;position:relative}.table-tile.occupied{background:#7f171d;border-color:#e13a42}.table-tile.bill{background:#805000;border-color:#efa51a}.table-tile.selected{outline:3px solid var(--orange);outline-offset:2px}.table-tile b{font-size:27px}.table-tile small{font-weight:700}.table-tile .move{position:absolute;right:6px;top:4px;font-size:11px;color:#fff}
+.form{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.form input,.form select,.field{background:#101010;color:white;border:1px solid #444;border-radius:9px;padding:11px;min-width:0}.form input{flex:1}.products{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}.product{display:flex;flex-direction:column;gap:8px}.product .price{font-size:20px;color:#ff9b37;font-weight:800}.product button{margin-top:auto}.list{display:grid;gap:9px}.qty-control{display:flex;align-items:center;gap:7px;flex-shrink:0}.qty-control button{width:38px;height:38px;padding:0;font-size:22px;line-height:1;border-radius:9px}.qty-control input{width:54px!important;text-align:center;margin:0!important;padding:8px!important}.order-line{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%}.order-line-info{min-width:0;flex:1}.order-line-total{font-weight:800;color:#ff9b37;white-space:nowrap}.item{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#202020;padding:12px;border-radius:10px}.pill{font-size:12px;padding:4px 8px;border-radius:20px;background:#333}.pill.green{background:#145a31}.pill.red{background:#6c1b20}.pill.yellow{background:#684500}.pill.blue{background:#153f75}.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:15px;z-index:20}.modal.show{display:flex}.modalbox{background:#1b1b1b;border:1px solid #555;border-radius:16px;padding:20px;width:min(560px,100%);max-height:90vh;overflow:auto}.modalbox h2{margin-top:0}.modalbox input,.modalbox select{width:100%;margin:5px 0 12px;background:#101010;color:white;border:1px solid #444;border-radius:8px;padding:11px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.hide{display:none!important}.warning{color:#ffbd55}.empty{padding:24px;text-align:center;color:#aaa}.menu-toggle{display:none}
+@media(max-width:800px){.app{grid-template-columns:1fr}.sidebar{position:fixed;z-index:10;left:-250px;top:0;bottom:0;width:230px;transition:left .2s}.sidebar.open{left:0}.menu-toggle{display:inline-block}.top{height:62px;padding:0 13px}.top strong{font-size:18px}.content{padding:14px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.tables{grid-template-columns:repeat(3,minmax(0,1fr))}.table-tile{min-height:95px}.table-tile b{font-size:23px}}
+@media(max-width:390px){.tables{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:1fr 1fr}.card{padding:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar" id="sidebar">
+<div class="brand"><img src="logo.png" alt="Logo Cantinho do Hot Dog"><span>CANTINHO DO HOT DOG</span></div>
+<button class="nav active" data-view="mesas">▦ Mesas</button>
+<button class="nav" data-view="cardapio">☰ Cardápio & estoque</button>
+<button class="nav" data-view="cozinha">♨ Cozinha <span id="kitchenCount"></span></button>
+<button class="nav" data-view="caixa">▣ Caixa</button>
+<button class="nav" data-view="relatorios">▥ Relatórios</button>
+<button class="nav" data-view="usuarios">♙ Usuários</button>
+<div style="margin-top:auto" class="muted" id="sessionInfo">Modo demonstração</div>
+<button class="secondary" id="resetBtn">Restaurar dados de demonstração</button>
+</aside>
+<main class="main">
+<header class="top"><div class="row"><button class="menu-toggle" id="menuToggle">☰</button><strong id="pageTitle">Mapa de Mesas</strong></div><div class="row"><span class="pill yellow" id="syncStatus">● Aguardando conexão</span><span id="currentUser" class="muted">Administrador</span></div></header>
+<div class="content">
+<section class="view active" id="view-mesas">
+<div class="row between"><div><h2 class="section-title">Salão principal</h2><span class="muted">Toque em uma mesa para abrir ou consultar a conta.</span></div><button id="addTableBtn">＋ Adicionar mesa</button></div>
+<div class="row" style="margin:14px 0"><span class="pill green">Livre</span><span class="pill red">Ocupada</span><span class="pill yellow">Conta aberta</span><span class="muted" id="tableSummary"></span></div>
+<div class="grid tables" id="tableGrid"></div>
+</section>
+<section class="view" id="view-cardapio">
+<div class="row between"><div><h2 class="section-title">Cardápio e estoque</h2><span class="muted">Cadastre produtos, preços e quantidades disponíveis.</span></div><button id="addProductBtn">＋ Novo produto</button></div>
+<div class="form"><input id="productSearch" placeholder="Buscar produto..."></div><div class="grid products" id="productGrid"></div>
+</section>
+<section class="view" id="view-cozinha">
+<div class="row between"><div><h2 class="section-title">Painel da cozinha</h2><span class="muted">Pedidos aparecem aqui assim que são enviados.</span></div><button class="secondary" id="kitchenRefresh">↻ Atualizar</button></div>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))"><div class="card"><h3>Novos / Em preparo</h3><div id="preparingList" class="list"></div></div><div class="card"><h3>Prontos</h3><div id="readyList" class="list"></div></div></div>
+</section>
+<section class="view" id="view-caixa">
+<h2 class="section-title">Caixa</h2><div class="grid stats" id="cashStats"></div><div class="card"><h3>Contas abertas</h3><div id="openBills" class="list"></div></div>
+</section>
+<section class="view" id="view-relatorios">
+<div class="row between"><h2 class="section-title">Relatório do dia</h2><div class="row"><button class="secondary" onclick="printCurrentDayReport()">Imprimir relatório</button><button class="good hide" id="startDayBtn" onclick="startBusinessDay()">▶ Iniciar o dia</button><button class="danger" id="closeDayBtn" onclick="closeBusinessDay()">Encerrar o dia</button></div></div><div id="dayClosureStatus" class="muted" style="margin-bottom:12px"></div><div class="grid stats" id="reportStats"></div><div class="card"><h3>Itens mais pedidos</h3><div id="topItems" class="list"></div></div><div class="card" style="margin-top:14px"><h3>Vendas recentes</h3><div id="salesList" class="list"></div></div><div class="card" style="margin-top:14px"><h3>Histórico de dias encerrados</h3><div id="closedDaysHistory" class="list"></div></div>
+</section>
+<section class="view" id="view-usuarios">
+<div class="row between"><div><h2 class="section-title">Usuários e permissões</h2><span class="muted">Crie quantos usuários precisar e escolha o perfil.</span></div><button id="addUserBtn">＋ Novo usuário</button></div><div id="userList" class="list"></div>
+</section>
+</div></main></div>
+<div class="modal" id="modal"><div class="modalbox" id="modalContent"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+const $=s=>document.querySelector(s), money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const seed=()=>({tables:Array.from({length:12},(_,i)=>({id:i+1,name:String(i+1).padStart(2,'0')})),products:[{id:1,name:'Hot Dog Tradicional',price:15,stock:30,active:true},{id:2,name:'Hot Dog Completo',price:21,stock:20,active:true},{id:3,name:'Hot Dog Bacon',price:24,stock:12,active:true},{id:4,name:'Refrigerante lata',price:6,stock:40,active:true},{id:5,name:'Suco',price:8,stock:0,active:false}],orders:[],sales:[],closedDays:{},users:[{id:1,name:'Administrador',role:'Administrador',username:'admin'}],next:{table:13,product:6,order:1,user:2}});
+let db=seed(), selectedTable=null, activeUser={name:'Administrador',role:'Administrador'}, sb=null, syncChannel=null, saving=false, savePending=false, localRevision=0, lastLocalWriteAt=0, authenticated=false;
+function setSyncStatus(message,kind='yellow'){const el=$('#syncStatus');if(el){el.className='pill '+kind;el.textContent='● '+message}}
+async function flushCloudSave(){
+  if(saving || !sb) return;
+  saving=true;
+  try{
+    while(savePending){
+      savePending=false;
+      const revision=localRevision;
+      const snapshot=JSON.parse(JSON.stringify(db));
+      const stamp=new Date().toISOString();
+      const {error}=await sb.from('app_state').upsert({id:'main',data:snapshot,updated_at:stamp});
+      if(error) throw error;
+      lastLocalWriteAt=Date.now();
+      if(localRevision!==revision) savePending=true;
+    }
+    setSyncStatus('Dados salvos na nuvem','green');
+  }catch(error){
+    savePending=true;
+    setSyncStatus('Erro ao salvar','red');
+    console.error('Falha ao salvar no Supabase:',error);
+    alert('Não foi possível sincronizar: '+error.message);
+  }finally{saving=false;}
+}
+function save(){
+  render();
+  if(!sb || !db) return;
+  localRevision++;
+  savePending=true;
+  setSyncStatus('Salvando alterações','yellow');
+  flushCloudSave();
+}
+async function loadCloudState(){
+  setSyncStatus('Carregando dados','yellow');
+  const {data,error}=await sb.from('app_state').select('data').eq('id','main').maybeSingle();
+  if(error) throw error;
+  if(data?.data) db=data.data;
+  else { db=seed(); const result=await sb.from('app_state').insert({id:'main',data:db}); if(result.error) throw result.error; }
+  db.closedDays ||= {};
+  if(typeof db.activeDay==='undefined') db.activeDay=true;
+  activeUser={name:sb.auth.getUser ? (await sb.auth.getUser()).data.user?.email || 'Usuário' : 'Usuário',role:'Administrador'};
+  render();
+  if(syncChannel) await sb.removeChannel(syncChannel);
+  syncChannel=sb.channel('hotdog-state').on('postgres_changes',{event:'*',schema:'public',table:'app_state',filter:'id=eq.main'},payload=>{
+    if(!payload.new?.data) return;
+    if(savePending || saving || Date.now()-lastLocalWriteAt<1500) return;
+    db=payload.new.data;
+    render();
+    setSyncStatus('Atualizado em tempo real','green');
+  }).subscribe((status,err)=>{
+    if(status==='SUBSCRIBED') setSyncStatus('Tempo real conectado','green');
+    else if(status==='CHANNEL_ERROR'){setSyncStatus('Erro no tempo real','red');console.error('Supabase Realtime:',err);}
+    else if(status==='TIMED_OUT') setSyncStatus('Tempo real: tempo esgotado','red');
+    else if(status==='CLOSED') setSyncStatus('Tempo real desconectado','yellow');
+    else setSyncStatus('Conectando tempo real','yellow');
+  });
+}
+function unlockApp(){
+  authenticated=true;
+  $('.app').classList.add('authenticated');
+  closeModal();
+}
+function lockApp(message='Entre com seu e-mail e sua senha do Supabase para continuar.'){
+  authenticated=false;
+  $('.app').classList.remove('authenticated');
+  if(syncChannel&&sb){sb.removeChannel(syncChannel);syncChannel=null;}
+  login(message);
+}
+async function startCloud(){
+  if(!window.supabase || !window.HOTDOG_CONFIG?.url || !window.HOTDOG_CONFIG?.key){ login('Configuração do Supabase não encontrada. Confira o arquivo config.js.'); return; }
+  sb=window.supabase.createClient(window.HOTDOG_CONFIG.url,window.HOTDOG_CONFIG.key);
+  sb.auth.onAuthStateChange((event,session)=>{
+    if(event==='SIGNED_OUT' || (!session && event==='TOKEN_REFRESHED')) lockApp('Sua sessão foi encerrada. Entre novamente para continuar.');
+  });
+  try{
+    const {data:{session},error}=await sb.auth.getSession();
+    if(error) throw error;
+    if(session){
+      await loadCloudState();
+      unlockApp();
+    }else login();
+  }catch(e){
+    console.error('Falha ao iniciar sessão:',e);
+    login('Não foi possível validar sua sessão. Entre novamente com sua conta Supabase.');
+  }
+}
+
+function openModal(content){if(!authenticated)return;$('#modalContent').innerHTML=content;$('#modal').classList.add('show')}
+function closeModal(){if(!authenticated)return;$('#modal').classList.remove('show')}
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal' && authenticated)closeModal()});
+function switchView(v){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.view===v));$('#pageTitle').textContent=({mesas:'Mapa de Mesas',cardapio:'Cardápio e Estoque',cozinha:'Painel da Cozinha',caixa:'Caixa',relatorios:'Relatórios',usuarios:'Usuários'})[v];$('#sidebar').classList.remove('open');render()}
+document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
+$('#menuToggle').onclick=()=>$('#sidebar').classList.toggle('open');
+function tableOrder(id){return db.orders.filter(o=>o.tableId===id&&!o.paid)}
+function totalOrder(o){return o.items.reduce((s,i)=>s+i.price*i.qty,0)}
+function tableStatus(id){let os=tableOrder(id);return !os.length?'Livre':os.some(o=>o.status==='Pronto')||os.some(o=>o.status==='Em preparo')?'Ocupada':'Conta aberta'}
+function renderTables(){$('#tableGrid').innerHTML=db.tables.map(t=>{let os=tableOrder(t.id),st=tableStatus(t.id),sum=os.reduce((a,o)=>a+totalOrder(o),0);return `<button class="table-tile ${st==='Ocupada'?'occupied':st==='Conta aberta'?'bill':''} ${selectedTable===t.id?'selected':''}" data-table="${t.id}"><span class="move">⋮⋮</span><b>${t.name}</b><small>${st}</small>${os.length?`<small>${money(sum)}</small>`:''}</button>`}).join('');document.querySelectorAll('[data-table]').forEach(b=>b.onclick=()=>openTable(+b.dataset.table));let free=db.tables.filter(t=>!tableOrder(t.id).length).length;$('#tableSummary').textContent=`${free} de ${db.tables.length} mesas livres`}
+function openTable(id){selectedTable=id;let t=db.tables.find(x=>x.id===id),orders=tableOrder(id),items=orders.flatMap(o=>o.items),sum=orders.reduce((a,o)=>a+totalOrder(o),0);openModal(`<h2>Mesa ${t.name}</h2><p class="muted">Conta atual: <b>${money(sum)}</b></p><div class="list">${orders.map(o=>`<div class="item"><span>Pedido #${o.id} • ${o.status}<br><small>${o.items.map(i=>`${i.qty}x ${i.name}`).join(', ')}</small></span><b>${money(totalOrder(o))}</b></div>`).join('')||'<div class="empty">Nenhum pedido nesta mesa.</div>'}</div><div class="modal-actions"><button class="secondary" onclick="closeModal()">Fechar</button><button onclick="newOrder(${id})">＋ Fazer pedido</button>${orders.length?`<button class="good" onclick="checkout(${id})">Fechar conta</button>`:''}</div>`);renderTables()}
+function newOrder(tableId){let available=db.products.filter(p=>p.active&&(p.stockInfinite||p.stock>0));openModal(`<h2>Novo pedido • Mesa ${db.tables.find(t=>t.id===tableId).name}</h2><p class="muted">Use − e + para ajustar a quantidade.</p><div id="orderProducts" class="list">${available.map(p=>`<div class="item"><div class="order-line"><div class="order-line-info"><b>${p.name}</b><br><small>${money(p.price)} • Estoque: ${p.stockInfinite?'Infinito':p.stock}</small></div><div class="qty-control"><button type="button" class="secondary" aria-label="Diminuir ${p.name}" onclick="changeOrderQty(${p.id},-1)" id="minus-${p.id}" disabled>−</button><input type="number" inputmode="numeric" min="0" max="${p.stockInfinite?'':p.stock}" step="1" value="0" id="qty-${p.id}" aria-label="Quantidade de ${p.name}" oninput="orderQtyChanged(${p.id})"><button type="button" aria-label="Aumentar ${p.name}" onclick="changeOrderQty(${p.id},1)" id="plus-${p.id}">+</button></div><span class="order-line-total" id="line-${p.id}">${money(0)}</span></div></div>`).join('')||'<p>Não há produtos disponíveis.</p>'}</div><div class="card" style="margin-top:12px"><div class="row between"><b>Total do pedido</b><b id="newOrderTotal" style="font-size:22px;color:#ff9b37">${money(0)}</b></div></div><label>Observações<input id="orderNote" placeholder="Ex.: sem milho, bem passado..."></label><div class="modal-actions"><button class="secondary" onclick="closeModal()">Cancelar</button><button onclick="saveOrder(${tableId})">Enviar para cozinha</button></div>`)}
+function changeOrderQty(productId,delta){let p=db.products.find(x=>x.id===productId),el=$(`#qty-${productId}`);if(!p||!el)return;let current=Math.max(0,Math.floor(Number(el.value)||0));el.value=Math.max(0,p.stockInfinite?current+delta:Math.min(p.stock,current+delta));orderQtyChanged(productId)}
+function orderQtyChanged(productId){let p=db.products.find(x=>x.id===productId),el=$(`#qty-${productId}`);if(!p||!el)return;let qty=Math.max(0,p.stockInfinite?Math.floor(Number(el.value)||0):Math.min(p.stock,Math.floor(Number(el.value)||0)));el.value=qty;let line=$(`#line-${productId}`);if(line)line.textContent=money(qty*p.price);let minus=$(`#minus-${productId}`),plus=$(`#plus-${productId}`);if(minus)minus.disabled=qty<=0;if(plus)plus.disabled=!p.stockInfinite&&qty>=p.stock;calcNewOrderTotal()}
+function calcNewOrderTotal(){let total=0;for(let p of db.products){let el=$(`#qty-${p.id}`);if(el)total+=Math.max(0,Math.floor(Number(el.value)||0))*p.price}let target=$('#newOrderTotal');if(target)target.textContent=money(total)}
+function saveOrder(tableId){if(db.activeDay===false){alert('O caixa está fechado. Toque em Iniciar o dia antes de registrar novos pedidos.');return}let items=[];for(let p of db.products){let el=$('#qty-'+p.id),qty=el?Math.max(0,Math.floor(+el.value)):0;if(!p.stockInfinite&&qty>p.stock){alert(`Estoque insuficiente: ${p.name}`);return}if(qty)items.push({productId:p.id,name:p.name,price:p.price,qty})}if(!items.length){alert('Escolha ao menos um item.');return}items.forEach(i=>{let p=db.products.find(p=>p.id===i.productId);if(!p.stockInfinite){p.stock-=i.qty;if(p.stock===0)p.active=false}});db.orders.push({id:db.next.order++,tableId,items,note:$('#orderNote').value,status:'Em preparo',created:new Date().toISOString(),paid:false});closeModal();save();render()}
+function updateOrder(id,status){let o=db.orders.find(o=>o.id===id);if(o)o.status=status;save()}
+function orderCard(o){return `<div class="item"><div><b>Pedido #${o.id} • Mesa ${db.tables.find(t=>t.id===o.tableId)?.name||o.tableId}</b><div>${o.items.map(i=>`${i.qty}x ${i.name}`).join('<br>')}</div><small class="muted">${o.note||''} • ${new Date(o.created).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</small><br><b>${money(totalOrder(o))}</b></div><div class="row">${o.status==='Em preparo'?`<button class="good" onclick="updateOrder(${o.id},'Pronto')">Pronto</button>`:`<span class="pill green">Pronto</span>`}<button class="secondary" onclick="printOrder(${o.id})">Imprimir</button></div></div>`}
+function printOrder(id){let o=db.orders.find(o=>o.id===id);let w=window.open('','_blank','width=360,height=600');if(!w){alert('Permita pop-ups para imprimir.');return}w.document.write(`<html><body style="font:12px monospace;width:58mm;max-width:100%;margin:0 auto;padding:2mm;color:#000;background:#fff"><div style="text-align:center;margin:0 auto 8px"><img src="logo-print.png" alt="Cantinho do Hot Dog" style="display:block;width:170px;max-width:90%;height:auto;margin:0 auto;filter:grayscale(1) contrast(1.7)"></div><h2 style="text-align:center">CANTINHO DO HOT DOG</h2><h3>COMANDA • Mesa ${o.tableId}</h3>Pedido #${o.id}<hr>${o.items.map(i=>`${i.qty}x ${i.name} — ${money(i.price*i.qty)}`).join('<br>')}<hr>${o.note||''}<p>${new Date(o.created).toLocaleString('pt-BR')}</p><script>window.print()<\/script></body></html>`);w.document.close()}
+function checkout(tableId){if(db.activeDay===false){alert('O caixa está fechado. Toque em Iniciar o dia antes de receber pagamentos.');return}let orders=tableOrder(tableId),subtotal=orders.reduce((a,o)=>a+totalOrder(o),0);openModal(`<h2>Fechar conta • Mesa ${db.tables.find(t=>t.id===tableId).name}</h2><p>Subtotal: <b>${money(subtotal)}</b></p><label><input type="checkbox" id="service" style="width:auto"> Adicionar serviço de 10%</label><label>Forma de pagamento<select id="payMethod"><option>Dinheiro</option><option>Cartão</option><option>Pix</option></select></label><label>Valor recebido (dinheiro)<input id="received" type="number" step=".01" placeholder="${subtotal.toFixed(2)}"></label><label>Dividir por quantas pessoas?<input id="people" type="number" min="1" value="1"></label><div id="checkoutTotal"></div><div class="modal-actions"><button class="secondary" onclick="closeModal()">Cancelar</button><button class="good" onclick="finishCheckout(${tableId})">Receber pagamento</button></div>`);$('#service').onchange=calcCheckout;$('#people').oninput=calcCheckout;$('#payMethod').onchange=()=>{const cash=$('#payMethod').value==='Dinheiro';$('#received').disabled=!cash;$('#received').placeholder=cash?subtotal.toFixed(2):'Não se aplica';calcCheckout()};calcCheckout()}
+function calcCheckout(){let tableId=selectedTable,orders=tableOrder(tableId),sub=orders.reduce((a,o)=>a+totalOrder(o),0),total=sub*($('#service')?.checked?1.1:1),people=Math.max(1,+($('#people')?.value||1));$('#checkoutTotal').innerHTML=`<p>Total: <b>${money(total)}</b> • Por pessoa: <b>${money(total/people)}</b></p>`}
+function finishCheckout(id){let orders=tableOrder(id),sub=orders.reduce((a,o)=>a+totalOrder(o),0),service=$('#service').checked,total=sub*(service?1.1:1),method=$('#payMethod').value,received=method==='Dinheiro'?Number($('#received').value):total;if(method==='Dinheiro'&&(!Number.isFinite(received)||received<total)){alert('Informe o valor recebido, igual ou maior que o total.');return}if(db.activeDay===false){alert('O caixa está fechado. Inicie um novo dia antes de registrar vendas.');return}let sale={id:Date.now(),tableId:id,subtotal:sub,service,total,method,received:method==='Dinheiro'?received:total,change:method==='Dinheiro'?Math.max(0,received-total):0,items:orders.flatMap(o=>o.items),date:new Date().toISOString()};db.sales.push(sale);orders.forEach(o=>o.paid=true);closeModal();save();render();openModal(`<h2>Pagamento registrado!</h2><p>Conta da mesa ${id} paga com sucesso.</p><p><b>Total: ${money(sale.total)}</b></p><div class="modal-actions"><button class="secondary" onclick="closeModal()">Fechar</button><button class="good" onclick="closeModal();printReceiptById(${sale.id})">Imprimir recibo</button></div>`)}
+function printReceiptById(id){let sale=db.sales.find(s=>s.id===id);if(sale)printReceipt(sale)}
+function printReceipt(s){let w=window.open('','_blank','width=360,height=600');if(!w){alert('Pagamento registrado. Permita pop-ups para imprimir o recibo.');return}w.document.write(`<body style="font:12px monospace;width:58mm;max-width:100%;margin:0 auto;padding:2mm;color:#000;background:#fff"><div style="text-align:center;margin:0 auto 8px"><img src="logo-print.png" alt="Cantinho do Hot Dog" style="display:block;width:170px;max-width:90%;height:auto;margin:0 auto;filter:grayscale(1) contrast(1.7)"></div><h2 style="text-align:center">CANTINHO DO HOT DOG</h2><h3>RECIBO • Mesa ${s.tableId}</h3><hr>${s.items.map(i=>`${i.qty}x ${i.name} ${money(i.price*i.qty)}`).join('<br>')}<hr>Subtotal: ${money(s.subtotal)}<br>Serviço: ${s.service?'10%':'Não'}<br><b>Total: ${money(s.total)}</b><br>Pagamento: ${s.method}<br>Recebido: ${money(s.received||s.total)}<br>Troco: ${money(s.change)}<p>${new Date(s.date).toLocaleString('pt-BR')}</p><script>window.print()<\/script></body>`);w.document.close()}
+function renderProducts(){let q=$('#productSearch').value.toLowerCase();$('#productGrid').innerHTML=db.products.filter(p=>p.name.toLowerCase().includes(q)).map(p=>`<div class="card product"><div class="row between"><b>${p.name}</b><span class="pill ${p.active?'green':'red'}">${p.active?'Ativo':'Indisponível'}</span></div><div class="price">${money(p.price)}</div><div>Estoque: <b class="${!p.stockInfinite&&p.stock<5?'warning':''}">${p.stockInfinite?'Infinito':p.stock}</b></div>${!p.stockInfinite&&p.stock===0?'<span class="warning">⚠ Item em falta</span>':''}<div class="row"><button class="secondary" onclick="editProduct(${p.id})">Editar</button><button class="${p.active?'danger':'good'}" onclick="toggleProduct(${p.id})">${p.active?'Desativar':'Ativar'}</button><button class="danger" onclick="deleteProduct(${p.id})">Excluir</button></div></div>`).join('')}
+function deleteProduct(id){const p=db.products.find(x=>x.id===id);if(!p)return;if(!confirm(`Excluir o produto "${p.name}" do cardápio e estoque? O histórico de vendas já registrado será mantido.`))return;db.products=db.products.filter(x=>x.id!==id);save()}
+function editProduct(id){let p=db.products.find(p=>p.id===id);openModal(`<h2>${p?'Editar':'Novo'} produto</h2><label>Nome<input id="pName" value="${p?.name||''}"></label><label>Preço (R$)<input id="pPrice" type="number" step=".01" value="${p?.price||''}"></label><label>Estoque<input id="pStock" type="number" min="0" value="${p?.stock??0}" ${p?.stockInfinite?'disabled':''}></label><label style="display:flex;align-items:center;gap:8px"><input id="pStockInfinite" type="checkbox" style="width:auto" ${p?.stockInfinite?'checked':''} onchange="$('#pStock').disabled=this.checked"> Estoque infinito (não descontar ao vender)</label><div class="modal-actions"><button class="secondary" onclick="closeModal()">Cancelar</button><button onclick="saveProduct(${id||0})">Salvar</button></div>`)}
+function saveProduct(id){let name=$('#pName').value.trim(),price=+$('#pPrice').value,stockInfinite=$('#pStockInfinite').checked,stock=Math.max(0,+$('#pStock').value);if(!name||price<=0){alert('Informe nome e preço válido.');return}let p=db.products.find(p=>p.id===id);if(p){Object.assign(p,{name,price,stock,stockInfinite,active:stockInfinite||stock>0})}else db.products.push({id:db.next.product++,name,price,stock,stockInfinite,active:stockInfinite||stock>0});closeModal();save()}
+function toggleProduct(id){let p=db.products.find(p=>p.id===id);if(!p.stockInfinite&&!p.stock){alert('Reponha o estoque ou marque Estoque infinito antes de ativar.');return}p.active=!p.active;save()}
+function renderKitchen(){let os=db.orders.filter(o=>!o.paid);$('#preparingList').innerHTML=os.filter(o=>o.status==='Em preparo').map(orderCard).join('')||'<div class="empty">Nenhum pedido em preparo.</div>';$('#readyList').innerHTML=os.filter(o=>o.status==='Pronto').map(orderCard).join('')||'<div class="empty">Nenhum pedido pronto.</div>';$('#kitchenCount').textContent=os.length?`(${os.length})`:''}
+function localDayKey(date=new Date()){const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');return `${y}-${m}-${d}`}
+function salesForToday(){if(db.activeDay===false)return [];const start=db.activeDayStartedAt?new Date(db.activeDayStartedAt).getTime():new Date().setHours(0,0,0,0);return db.sales.filter(s=>new Date(s.date).getTime()>=start)}
+function dailyTotals(sales){const total=sales.reduce((a,s)=>a+Number(s.total||0),0),cash=sales.filter(s=>s.method==='Dinheiro').reduce((a,s)=>a+Number(s.total||0),0),pix=sales.filter(s=>s.method==='Pix').reduce((a,s)=>a+Number(s.total||0),0),card=sales.filter(s=>s.method==='Cartão').reduce((a,s)=>a+Number(s.total||0),0),changeCount=sales.filter(s=>Number(s.change||0)>0).length,changeTotal=sales.reduce((a,s)=>a+Number(s.change||0),0);return {total,cash,pix,card,changeCount,changeTotal,count:sales.length}}
+function renderCash(){let open=db.tables.map(t=>({t,os:tableOrder(t.id)})).filter(x=>x.os.length);$('#openBills').innerHTML=open.map(x=>`<div class="item"><span><b>Mesa ${x.t.name}</b><br>${x.os.length} pedido(s)</span><b>${money(x.os.reduce((a,o)=>a+totalOrder(o),0))}</b><button onclick="selectedTable=${x.t.id};checkout(${x.t.id})">Receber</button></div>`).join('')||'<div class="empty">Nenhuma conta aberta.</div>';let today=salesForToday(),t=dailyTotals(today);$('#cashStats').innerHTML=`<div class="card stat">Vendido hoje<b>${money(t.total)}</b></div><div class="card stat">Contas pagas<b>${t.count}</b></div><div class="card stat">Dinheiro<b>${money(t.cash)}</b></div><div class="card stat">Pix<b>${money(t.pix)}</b></div><div class="card stat">Cartão<b>${money(t.card)}</b></div><div class="card stat">Trocos passados<b>${t.changeCount}</b></div>`}
+function renderReports(){let today=salesForToday(),t=dailyTotals(today),count=today.reduce((a,s)=>a+s.items.reduce((n,i)=>n+i.qty,0),0),closed=db.activeDay===false;$('#reportStats').innerHTML=`<div class="card stat">Rendimento do dia<b>${money(t.total)}</b></div><div class="card stat">Em dinheiro<b>${money(t.cash)}</b></div><div class="card stat">Em Pix<b>${money(t.pix)}</b></div><div class="card stat">Em cartão<b>${money(t.card)}</b></div><div class="card stat">Trocos passados<b>${t.changeCount}</b></div><div class="card stat">Valor total dos trocos<b>${money(t.changeTotal)}</b></div><div class="card stat">Vendas<b>${t.count}</b></div><div class="card stat">Itens vendidos<b>${count}</b></div>`;$('#dayClosureStatus').innerHTML=closed?`<span class="pill red">Dia encerrado</span> O caixa está fechado. Inicie um novo dia para voltar a registrar vendas.`:'<span class="pill green">Dia aberto</span> Caixa em funcionamento.';$('#closeDayBtn').disabled=!!closed;$('#closeDayBtn').classList.toggle('hide',!!closed);$('#startDayBtn').classList.toggle('hide',!closed);let tops={};today.forEach(s=>s.items.forEach(i=>tops[i.name]=(tops[i.name]||0)+i.qty));$('#topItems').innerHTML=Object.entries(tops).sort((a,b)=>b[1]-a[1]).map(([n,q])=>`<div class="item"><b>${n}</b><span>${q} vendidos</span></div>`).join('')||'<div class="empty">Ainda não há vendas hoje.</div>';$('#salesList').innerHTML=today.slice().reverse().map(s=>`<div class="item"><span>Mesa ${s.tableId} • ${s.method}<br><small>${new Date(s.date).toLocaleTimeString('pt-BR')}</small>${Number(s.change||0)>0?`<br><small>Troco: ${money(s.change)}</small>`:''}</span><b>${money(s.total)}</b><button class="secondary" onclick="printReceiptById(${s.id})">Imprimir</button></div>`).join('')||'<div class="empty">Sem vendas registradas.</div>';const history=Object.entries(db.closedDays||{}).sort((a,b)=>b[0].localeCompare(a[0]));$('#closedDaysHistory').innerHTML=history.map(([key,r])=>`<div class="item"><span><b>${key}</b><br><small>Encerrado em ${new Date(r.closedAt).toLocaleString('pt-BR')} • ${r.count||0} vendas • ${r.itemCount||0} itens</small></span><b>${money(r.total)}</b><button class="secondary" onclick="printDayReport('${key}',db.closedDays['${key}'])">Ver / imprimir</button></div>`).join('')||'<div class="empty">Nenhum dia encerrado ainda.</div>'}
+function dayItemCount(sales){return sales.reduce((n,s)=>n+(s.items||[]).reduce((sum,i)=>sum+Number(i.qty||0),0),0)}
+function dayReportData(sales){const totals=dailyTotals(sales);return {...totals,itemCount:dayItemCount(sales),sales:sales.map(s=>({id:s.id,tableId:s.tableId,subtotal:s.subtotal,service:s.service,total:s.total,method:s.method,received:s.received,change:s.change,date:s.date,items:s.items||[]}))}}
+function printDayReport(key,report){const data=report||dayReportData(db.sales.filter(s=>localDayKey(new Date(s.date))===key));const w=window.open('','_blank','width=420,height=720');if(!w){alert('O relatório foi salvo, mas o navegador bloqueou a janela de impressão. Permita pop-ups e toque em Imprimir relatório.');return}const rows=(data.sales||[]).map(s=>`<tr><td>${new Date(s.date).toLocaleTimeString('pt-BR')} • Mesa ${s.tableId}</td><td>${s.method}</td><td style="text-align:right">${money(s.total)}</td></tr>`).join('');w.document.write(`<html><head><meta charset="utf-8"><title>Fechamento ${key}</title><style>body{font:12px monospace;width:58mm;max-width:100%;margin:0 auto;padding:2mm;color:#000;background:#fff}img{filter:grayscale(1) contrast(1.7)}h2,h3{text-align:center}table{width:100%;border-collapse:collapse}td,th{padding:5px 0;border-bottom:1px dashed #888;text-align:left}.right{text-align:right}.total{font-size:18px;font-weight:bold}</style></head><body><div style="text-align:center;margin:0 auto 8px"><img src="logo-print.png" alt="Cantinho do Hot Dog" style="display:block;width:170px;max-width:90%;height:auto;margin:0 auto;filter:grayscale(1) contrast(1.7)"></div><h2 style="text-align:center">CANTINHO DO HOT DOG</h2><h3>FECHAMENTO DO DIA</h3><p>Data: ${key}</p><hr><p>Total vendido: <b>${money(data.total)}</b></p><p>Dinheiro: ${money(data.cash)}</p><p>Pix: ${money(data.pix)}</p><p>Cartão: ${money(data.card)}</p><hr><p>Trocos passados: ${data.changeCount||0}</p><p>Valor total dos trocos: ${money(data.changeTotal)}</p><p>Vendas/contas: ${data.count||0}</p><p>Itens vendidos: ${data.itemCount||0}</p><hr><h3>VENDAS</h3><table><thead><tr><th>Hora / Mesa</th><th>Forma</th><th class="right">Valor</th></tr></thead><tbody>${rows||'<tr><td colspan="3">Nenhuma venda registrada</td></tr>'}</tbody></table><hr><p>Relatório gerado em ${new Date().toLocaleString('pt-BR')}</p><script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close()}
+function printCurrentDayReport(){const entries=Object.entries(db.closedDays||{}).sort((a,b)=>String(b[1].closedAt||'').localeCompare(String(a[1].closedAt||'')));if(db.activeDay===false&&entries.length){const [key,report]=entries[0];printDayReport(key,report);return}const key=localDayKey();printDayReport(key,dayReportData(salesForToday()))}
+function closeBusinessDay(){if(db.activeDay===false){alert('O dia já está encerrado. Toque em Iniciar o dia para abrir um novo expediente.');return}const openOrders=db.orders.filter(o=>!o.paid);if(openOrders.length){alert('Ainda existem pedidos/contas em aberto. Feche todas as contas antes de encerrar o dia.');return}const report=dayReportData(salesForToday());const summary=`Total vendido: ${money(report.total)}\nDinheiro: ${money(report.cash)}\nPix: ${money(report.pix)}\nCartão: ${money(report.card)}\nTrocos passados: ${report.changeCount}\nValor total dos trocos: ${money(report.changeTotal)}\nVendas: ${report.count}\nItens vendidos: ${report.itemCount}`;if(!confirm(`Confirma encerrar o dia?\n\n${summary}\n\nO relatório será salvo no histórico e enviado para impressão.`))return;db.closedDays ||= {};const closedAt=new Date().toISOString();const key=localDayKey()+' '+new Date(closedAt).toLocaleTimeString('pt-BR').replace(/:/g,'-');db.closedDays[key]={...report,closedAt};db.activeDay=false;db.activeDayClosedAt=closedAt;save();printDayReport(key,db.closedDays[key]);alert('Dia encerrado. O relatório foi guardado no histórico. Toque em Iniciar o dia quando quiser abrir o próximo expediente.')}
+function startBusinessDay(){if(db.activeDay!==false){alert('O dia já está aberto.');return}if(!confirm('Deseja iniciar um novo dia? O relatório anterior continuará salvo no histórico e o caixa começará zerado.'))return;db.activeDay=true;db.activeDayStartedAt=new Date().toISOString();db.activeDayClosedAt=null;save();alert('Novo dia iniciado! O caixa está aberto e os valores do relatório começaram do zero.')}
+
+function renderUsers(){$('#userList').innerHTML=db.users.map(u=>`<div class="item"><span><b>${u.name}</b><br><small>${u.username} • ${u.role}</small></span><button class="secondary" onclick="editUser(${u.id})">Editar</button></div>`).join('')}
+function editUser(id){let u=db.users.find(u=>u.id===id);openModal(`<h2>${u?'Editar identificação':'Nova identificação de equipe'}</h2><label>Nome<input id="uName" value="${u?.name||''}"></label><label>Identificação<input id="uLogin" value="${u?.username||''}"></label><label>Perfil<select id="uRole">${['Administrador','Atendimento','Cozinha','Caixa'].map(r=>`<option ${u?.role===r?'selected':''}>${r}</option>`).join('')}</select></label><p class="muted">Contas e senhas de acesso são gerenciadas em Authentication no Supabase. Esta lista registra apenas nomes e funções.</p><div class="modal-actions"><button class="secondary" onclick="closeModal()">Cancelar</button><button onclick="saveUser(${id||0})">Salvar</button></div>`)}
+function saveUser(id){let name=$('#uName').value.trim(),username=$('#uLogin').value.trim(),role=$('#uRole').value;if(!name||!username){alert('Preencha nome e identificação.');return}if(db.users.some(u=>u.username===username&&u.id!==id)){alert('Esta identificação já existe.');return}let u=db.users.find(u=>u.id===id);if(u)Object.assign(u,{name,username,role});else db.users.push({id:db.next.user++,name,username,role});closeModal();save()}
+function render(){renderTables();renderProducts();renderKitchen();renderCash();renderReports();renderUsers();$('#currentUser').textContent=activeUser.name;$('#sessionInfo').textContent=`Sessão: ${activeUser.role}`}
+$('#addTableBtn').onclick=()=>openModal('<h2>Adicionar mesa</h2><label>Número / identificação<input id="tableName" placeholder="Ex.: 13"></label><div class="modal-actions"><button class="secondary" onclick="closeModal()">Cancelar</button><button onclick="addTable()">Adicionar</button></div>');
+function addTable(){let name=$('#tableName').value.trim();if(!name||db.tables.some(t=>t.name===name)){alert('Informe um número ainda não utilizado.');return}db.tables.push({id:db.next.table++,name});closeModal();save()}
+$('#addProductBtn').onclick=()=>editProduct(0);$('#productSearch').oninput=renderProducts;$('#addUserBtn').onclick=()=>editUser(0);$('#kitchenRefresh').onclick=renderKitchen;
+$('#resetBtn').onclick=()=>{if(confirm('Substituir os dados compartilhados por dados de demonstração? Isso afetará todos os dispositivos conectados.')){db=seed();save()}};
+function login(message='Acesse com uma conta cadastrada no Supabase.'){
+  authenticated=false;
+  $('.app').classList.remove('authenticated');
+  $('#modalContent').innerHTML=`<h2>🔒 Acessar Cantinho do Hot Dog</h2><p class="muted">${message}</p><label>E-mail<input id="authEmail" type="email" autocomplete="username" placeholder="seu@email.com"></label><label>Senha<input id="authPassword" type="password" autocomplete="current-password" placeholder="Sua senha"></label><div class="modal-actions"><button onclick="doLogin()">Entrar</button></div><small class="muted">Somente contas cadastradas e autenticadas pelo Supabase podem acessar o sistema.</small>`;
+  $('#modal').classList.add('show');
+}
+async function doLogin(){
+  const email=$('#authEmail').value.trim(),password=$('#authPassword').value;
+  if(!email||!password){alert('Informe e-mail e senha.');return}
+  const button=$('#modalContent button');button.disabled=true;button.textContent='Verificando...';
+  const {data,error}=await sb.auth.signInWithPassword({email,password});
+  if(error){button.disabled=false;button.textContent='Entrar';alert('Falha no acesso: '+error.message);return}
+  try{
+    if(!data.session) throw new Error('O Supabase não retornou uma sessão autenticada.');
+    await loadCloudState();
+    unlockApp();
+  }catch(e){
+    await sb.auth.signOut();
+    alert('Não foi possível carregar o sistema: '+e.message);
+    login('A autenticação não foi concluída. Confira sua conta e tente novamente.');
+  }
+}
+window.addEventListener('beforeunload',()=>{if(syncChannel&&sb)sb.removeChannel(syncChannel)});
+render();login();startCloud();
+</script>
+</body></html>
