@@ -79,6 +79,48 @@ const seed=()=>({tables:Array.from({length:12},(_,i)=>({id:i+1,name:String(i+1).
 function ensureMenuCatalog(){db.products ||= [];db.orders ||= [];db.sales ||= [];db.next ||= {product:1};let changed=false;const removedNames=['Adicional Bacon','Adicional Cheddar'];const kept=db.products.filter(p=>!removedNames.includes(String(p.name||'').trim()));if(kept.length!==db.products.length){db.products=kept;changed=true;}const oldDemo=['Hot Dog Tradicional','Hot Dog Completo','Hot Dog Bacon','Refrigerante lata','Suco'];const cleaned=db.products.filter(p=>!oldDemo.includes(p.name)||db.orders.some(o=>(o.items||[]).some(i=>i.productId===p.id))||db.sales.some(s=>(s.items||[]).some(i=>i.productId===p.id)));if(cleaned.length!==db.products.length){db.products=cleaned;changed=true;}for(const item of MENU_CATALOG){if(!db.products.some(p=>String(p.name||'').trim().toLowerCase()===item.name.toLowerCase())){db.products.push({id:db.next.product||1,...item,stock:0,stockInfinite:true,active:true});db.next.product=(db.next.product||1)+1;changed=true;}}db.next.product=Math.max(db.next.product||1,...db.products.map(p=>Number(p.id)+1));return changed;}
 
 let db=seed(), selectedTable=null, activeUser={name:'Administrador',role:'Administrador'}, sb=null, syncChannel=null, saving=false, savePending=false, localRevision=0, lastLocalWriteAt=0, authenticated=false;
+let notificationAudio=null;
+function unlockNotificationAudio(){
+  try{
+    const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+    if(!AudioContextClass)return;
+    if(!notificationAudio)notificationAudio=new AudioContextClass();
+    if(notificationAudio.state==='suspended')notificationAudio.resume();
+  }catch(error){console.warn('Áudio de notificações indisponível:',error);}
+}
+document.addEventListener('pointerdown',unlockNotificationAudio,{once:true,capture:true});
+function playNotificationTone(sequence){
+  try{
+    unlockNotificationAudio();
+    if(!notificationAudio||notificationAudio.state!=='running')return;
+    const now=notificationAudio.currentTime;
+    sequence.forEach(([frequency,start,duration])=>{
+      const oscillator=notificationAudio.createOscillator();
+      const gain=notificationAudio.createGain();
+      oscillator.type='sine';
+      oscillator.frequency.setValueAtTime(frequency,now+start);
+      gain.gain.setValueAtTime(0.0001,now+start);
+      gain.gain.exponentialRampToValueAtTime(0.22,now+start+0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001,now+start+duration);
+      oscillator.connect(gain);gain.connect(notificationAudio.destination);
+      oscillator.start(now+start);oscillator.stop(now+start+duration+0.03);
+    });
+  }catch(error){console.warn('Não foi possível tocar o aviso:',error);}
+}
+function playNewOrderSound(){playNotificationTone([[660,0,.18],[880,.24,.28]]);}
+function playOrderReadySound(){playNotificationTone([[880,0,.16],[1046,.2,.16],[1318,.4,.32]]);}
+function detectIncomingOrderNotifications(previousOrders,nextOrders){
+  const currentView=document.querySelector('.view.active')?.id;
+  const previousById=new Map((previousOrders||[]).map(order=>[String(order.id),order]));
+  const incoming=nextOrders||[];
+  const hasNewOrder=incoming.some(order=>!previousById.has(String(order.id))&&!order.paid);
+  const hasReadyOrder=incoming.some(order=>{
+    const previous=previousById.get(String(order.id));
+    return previous&&previous.status!=='Pronto'&&order.status==='Pronto'&&!order.paid;
+  });
+  if(currentView==='view-cozinha'&&hasNewOrder)playNewOrderSound();
+  if(currentView==='view-mesas'&&hasReadyOrder)playOrderReadySound();
+}
 function setSyncStatus(message,kind='yellow'){const el=$('#syncStatus');if(el){el.className='pill '+kind;el.textContent='● '+message}}
 async function flushCloudSave(){
   if(saving || !sb) return;
@@ -125,7 +167,10 @@ async function loadCloudState(){
   syncChannel=sb.channel('hotdog-state').on('postgres_changes',{event:'*',schema:'public',table:'app_state',filter:'id=eq.main'},payload=>{
     if(!payload.new?.data) return;
     if(savePending || saving || Date.now()-lastLocalWriteAt<1500) return;
-    db=payload.new.data;
+    const previousOrders=db.orders||[];
+    const incomingState=payload.new.data;
+    detectIncomingOrderNotifications(previousOrders,incomingState.orders||[]);
+    db=incomingState;
     render();
     setSyncStatus('Atualizado em tempo real','green');
   }).subscribe((status,err)=>{
