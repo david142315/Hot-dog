@@ -90,7 +90,7 @@ function unlockNotificationAudio(){
   }catch(error){console.warn('Áudio de notificações indisponível:',error);}
 }
 document.addEventListener('pointerdown',unlockNotificationAudio,{once:true,capture:true});
-function playNotificationTone(sequence){
+function playNotificationTone(sequence,volume=0.3){
   try{
     unlockNotificationAudio();
     if(!notificationAudio||notificationAudio.state!=='running')return;
@@ -101,15 +101,17 @@ function playNotificationTone(sequence){
       oscillator.type='sine';
       oscillator.frequency.setValueAtTime(frequency,now+start);
       gain.gain.setValueAtTime(0.0001,now+start);
-      gain.gain.exponentialRampToValueAtTime(0.22,now+start+0.025);
+      gain.gain.exponentialRampToValueAtTime(volume,now+start+0.025);
       gain.gain.exponentialRampToValueAtTime(0.0001,now+start+duration);
       oscillator.connect(gain);gain.connect(notificationAudio.destination);
       oscillator.start(now+start);oscillator.stop(now+start+duration+0.03);
     });
   }catch(error){console.warn('Não foi possível tocar o aviso:',error);}
 }
-function playNewOrderSound(){playNotificationTone([[660,0,.18],[880,.24,.28]]);}
-function playOrderReadySound(){playNotificationTone([[880,0,.16],[1046,.2,.16],[1318,.4,.32]]);}
+// Cozinha: aviso mais forte e encorpado para se destacar no barulho do preparo.
+function playNewOrderSound(){playNotificationTone([[440,0,.24],[660,.28,.22],[880,.56,.34]],0.68);}
+// Atendimento: aviso mais presente, mas com volume e timbre suaves.
+function playOrderReadySound(){playNotificationTone([[784,0,.18],[988,.23,.2],[1175,.48,.28]],0.34);}
 function detectIncomingOrderNotifications(previousOrders,nextOrders){
   const currentView=document.querySelector('.view.active')?.id;
   const previousById=new Map((previousOrders||[]).map(order=>[String(order.id),order]));
@@ -274,7 +276,8 @@ function printCurrentDayReport(){const entries=Object.entries(db.closedDays||{})
 function closeBusinessDay(){if(db.activeDay===false){alert('O dia já está encerrado. Toque em Iniciar o dia para abrir um novo expediente.');return}const openOrders=db.orders.filter(o=>!o.paid);if(openOrders.length){alert('Ainda existem pedidos/contas em aberto. Feche todas as contas antes de encerrar o dia.');return}const report=dayReportData(salesForToday());const summary=`Total vendido: ${money(report.total)}\nDinheiro: ${money(report.cash)}\nPix: ${money(report.pix)}\nCartão: ${money(report.card)}\nTrocos passados: ${report.changeCount}\nValor total dos trocos: ${money(report.changeTotal)}\nVendas: ${report.count}\nItens vendidos: ${report.itemCount}`;twoStepConfirm('Encerrar o dia?',summary+'\n\nO relatório será salvo no histórico e enviado para impressão.', 'Encerrar',()=>{db.closedDays ||= {};const closedAt=new Date().toISOString();const key=localDayKey()+' '+new Date(closedAt).toLocaleTimeString('pt-BR').replace(/:/g,'-');db.closedDays[key]={...report,closedAt};db.activeDay=false;db.activeDayClosedAt=closedAt;save();printDayReport(key,db.closedDays[key]);})}
 function startBusinessDay(){if(db.activeDay!==false){alert('O dia já está aberto.');return}twoStepConfirm('Iniciar um novo dia?','O relatório anterior continuará salvo no histórico e o caixa começará zerado.','Iniciar',()=>{db.activeDay=true;db.activeDayStartedAt=new Date().toISOString();db.activeDayClosedAt=null;save()})}
 
-function renderUsers(){if(activeUser.role!=='Administrador')return;const fixed=['dfabricielton@gmail.com','fabriciopolicarpo@gmail.com'];const entries=(db.users||[]).filter(u=>!fixed.includes(String(u.username||'').toLowerCase())&&String(u.username||'').toLowerCase()!=='admin');$('#userList').innerHTML=entries.map(u=>`<div class="item"><span><b>${u.name}</b><br><small>${u.username} • ${u.role}</small></span><button class="secondary" onclick="editUser(${u.id})">Editar</button></div>`).join('')||'<div class="empty">Nenhum funcionário cadastrado. Adicione o primeiro usuário.</div>'}
+function renderUsers(){if(activeUser.role!=='Administrador')return;const fixed=['dfabricielton@gmail.com','fabriciopolicarpo@gmail.com'];const entries=(db.users||[]).filter(u=>!fixed.includes(String(u.username||'').toLowerCase())&&String(u.username||'').toLowerCase()!=='admin');$('#userList').innerHTML=entries.map(u=>`<div class="item"><span><b>${u.name}</b><br><small>${u.username} • ${u.role}</small></span><div class="row"><button class="secondary" onclick="editUser(${u.id})">Editar</button><button class="danger" onclick="deleteUser(${u.id})">Excluir</button></div></div>`).join('')||'<div class="empty">Nenhum funcionário cadastrado. Adicione o primeiro usuário.</div>'}
+function deleteUser(id){if(activeUser.role!=='Administrador')return;const user=(db.users||[]).find(u=>u.id===id);if(!user)return;const protectedEmails=['dfabricielton@gmail.com','fabriciopolicarpo@gmail.com'];if(protectedEmails.includes(String(user.username||'').trim().toLowerCase()))return;twoStepConfirm('Excluir usuário?',`O cadastro de ${user.name} (${user.username}) será removido da lista de usuários autorizados do Cantinho do Hot Dog. A conta de autenticação do Supabase não será apagada por esta ação. Para remover também a conta de login, faça isso separadamente no Supabase Authentication.`, 'Excluir usuário',()=>{db.users=db.users.filter(u=>u.id!==id);save()})}
 function editUser(id){if(activeUser.role!=='Administrador')return;let u=db.users.find(u=>u.id===id);openModal(`<h2>${u?'Editar identificação':'Novo usuário da equipe'}</h2><label>Nome<input id="uName" value="${u?.name||''}"></label><label>E-mail de login<input id="uLogin" type="email" value="${u?.username||''}" placeholder="funcionario@email.com"></label><label>Perfil<select id="uRole">${['Atendimento','Cozinha'].map(r=>`<option ${u?.role===r?'selected':''}>${r}</option>`).join('')}</select></label><p class="muted">O funcionário também precisa ter uma conta criada em Authentication no Supabase, usando exatamente este e-mail. Os dois e-mails principais já são Administradores.</p><div class="modal-actions"><button class="secondary" onclick="closeModal()">Cancelar</button><button onclick="saveUser(${id||0})">Salvar</button></div>`)}
 function saveUser(id){if(activeUser.role!=='Administrador')return;let name=$('#uName').value.trim(),username=$('#uLogin').value.trim().toLowerCase(),role=$('#uRole').value;if(!name||!username||!username.includes('@')){alert('Informe nome e e-mail válido.');return}if(['dfabricielton@gmail.com','fabriciopolicarpo@gmail.com'].includes(username)){alert('Este e-mail já possui perfil de Administrador fixo.');return}if(db.users.some(u=>String(u.username||'').toLowerCase()===username&&u.id!==id)){alert('Este e-mail já está cadastrado.');return}let u=db.users.find(u=>u.id===id);if(u)Object.assign(u,{name,username,role});else db.users.push({id:db.next.user++,name,username,role});closeModal();save()}
 function render(){renderTables();renderProducts();renderKitchen();renderCash();renderReports();renderUsers();$('#currentUser').textContent=activeUser.name;$('#sessionInfo').textContent=`Sessão: ${activeUser.role}`}
